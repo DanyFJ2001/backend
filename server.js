@@ -7,6 +7,13 @@ const fs = require('fs');
 const path = require('path');
 const FormData = require('form-data');
 const { schedulePredictions, scheduleVolcanoChecks, scheduleAlertCleanup, getRecentAlerts } = require('./scheduler');
+// --- CREA LA CARPETA UPLOADS SI NO EXISTE ---
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+console.log('[INFO] uploadsDir:', uploadsDir);
+// --------------------------------------------
 
 const app = express();
 app.use(cors());
@@ -18,7 +25,7 @@ const PORT = process.env.PORT || 4000;
 const upload = multer({ 
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, 'uploads/');
+      cb(null, uploadsDir);
     },
     filename: (req, file, cb) => {
       const uniqueName = `audio-${Date.now()}.m4a`;
