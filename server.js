@@ -22,7 +22,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 4000;
 
 // Configurar multer para manejar archivos de audio
-const upload = multer({ 
+const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, uploadsDir);
@@ -123,10 +123,10 @@ app.post('/api/chat-weather', async (req, res) => {
       ubicacion: weatherData.city.name,
       pais: weatherData.city.country,
       pronostico_5_dias: weatherData.list.slice(0, 8).map(item => ({
-        fecha: new Date(item.dt * 1000).toLocaleDateString('es-ES', { 
-          weekday: 'long', 
-          month: 'long', 
-          day: 'numeric' 
+        fecha: new Date(item.dt * 1000).toLocaleDateString('es-ES', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric'
         }),
         hora: new Date(item.dt * 1000).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
         temperatura: Math.round(item.main.temp),
@@ -211,9 +211,9 @@ Tu respuesta:`;
 
   } catch (error) {
     console.error('❌ Error en chat-weather:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Error al procesar la consulta climática',
-      details: error.message 
+      details: error.message
     });
   }
 });
@@ -223,38 +223,46 @@ Tu respuesta:`;
 // ============================================
 app.post('/api/audio-weather', upload.single('audio'), async (req, res) => {
   let audioFilePath = null;
-  
+
   try {
     const { latitude, longitude } = req.body;
-    
+
     console.log('🎤 Audio recibido');
     console.log('📦 File info:', req.file ? { size: req.file.size, path: req.file.path } : 'NO FILE');
-    
+
     if (!req.file) {
       console.error('❌ No file received');
       return res.status(400).json({ error: 'No se recibió archivo de audio' });
     }
-    
+
     if (!latitude || !longitude) {
       console.error('❌ Missing coordinates');
       return res.status(400).json({ error: 'Se requiere ubicación' });
     }
 
-    audioFilePath = req.file.path;
-    console.log('📁 Audio guardado en:', audioFilePath);
+    // Nos aseguramos de que la ruta del archivo sea ABSOLUTA
+    const savedPath = req.file.path; // puede venir como 'uploads/audio-...m4a'
+    const absolutePath = path.isAbsolute(savedPath)
+      ? savedPath
+      : path.join(__dirname, savedPath);
+
+    audioFilePath = absolutePath;
+
+    console.log('📁 Audio guardado en (req.file.path):', savedPath);
+    console.log('📁 Ruta absoluta que usaremos:', absolutePath);
     console.log('📏 Tamaño del audio:', req.file.size, 'bytes');
 
     // 1. Transcribir el audio usando Whisper de OpenAI
     console.log('📝 Transcribiendo audio...');
     const audioFormData = new FormData();
-    audioFormData.append('file', fs.createReadStream(audioFilePath));
+    audioFormData.append('file', fs.createReadStream(absolutePath));
     audioFormData.append('model', 'whisper-1');
     audioFormData.append('language', 'es');
 
     console.log('🔑 Usando API Key:', process.env.OPENAI_API_KEY ? 'CONFIGURADA' : 'NO CONFIGURADA');
 
-    const transcriptionResponse = await axios.post('https://api.openai.com/v1/audio/transcriptions', 
-      audioFormData, 
+    const transcriptionResponse = await axios.post('https://api.openai.com/v1/audio/transcriptions',
+      audioFormData,
       {
         headers: {
           'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -292,10 +300,10 @@ app.post('/api/audio-weather', upload.single('audio'), async (req, res) => {
       ubicacion: weatherData.city.name,
       pais: weatherData.city.country,
       pronostico_5_dias: weatherData.list.slice(0, 8).map(item => ({
-        fecha: new Date(item.dt * 1000).toLocaleDateString('es-ES', { 
-          weekday: 'long', 
-          month: 'long', 
-          day: 'numeric' 
+        fecha: new Date(item.dt * 1000).toLocaleDateString('es-ES', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric'
         }),
         hora: new Date(item.dt * 1000).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
         temperatura: Math.round(item.main.temp),
@@ -381,9 +389,9 @@ Tu respuesta:`;
 
   } catch (error) {
     console.error('❌ Error en audio-weather:', error?.response?.data || error.message || error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Error al procesar el audio',
-      details: error?.response?.data || error.message 
+      details: error?.response?.data || error.message
     });
   } finally {
     // Limpiar archivo de audio temporal
@@ -435,52 +443,52 @@ app.get('/api/volcanoes', async (req, res) => {
     // Hardcoded active volcanoes in Ecuador (Sierra region)
     // Source: IGEPN (Instituto Geofísico de la Escuela Politécnica Nacional)
     const volcanoes = [
-      { 
-        id: 'cotopaxi', 
-        name: 'Cotopaxi', 
-        status: 'activo', 
-        lat: -0.680, 
-        lon: -78.438, 
+      {
+        id: 'cotopaxi',
+        name: 'Cotopaxi',
+        status: 'activo',
+        lat: -0.680,
+        lon: -78.438,
         altitude: 5897,
         province: 'Latacunga',
         lastUpdate: new Date().toISOString()
       },
-      { 
-        id: 'tungurahua', 
-        name: 'Tungurahua', 
-        status: 'activo', 
-        lat: -1.211, 
-        lon: -78.442, 
+      {
+        id: 'tungurahua',
+        name: 'Tungurahua',
+        status: 'activo',
+        lat: -1.211,
+        lon: -78.442,
         altitude: 5016,
         province: 'Ambato',
         lastUpdate: new Date().toISOString()
       },
-      { 
-        id: 'chimborazo', 
-        name: 'Chimborazo', 
-        status: 'dormido', 
-        lat: -1.469, 
-        lon: -78.817, 
+      {
+        id: 'chimborazo',
+        name: 'Chimborazo',
+        status: 'dormido',
+        lat: -1.469,
+        lon: -78.817,
         altitude: 6263,
         province: 'Riobamba',
         lastUpdate: new Date().toISOString()
       },
-      { 
-        id: 'pichincha', 
-        name: 'Pichincha', 
-        status: 'activo', 
-        lat: -0.359, 
-        lon: -78.506, 
+      {
+        id: 'pichincha',
+        name: 'Pichincha',
+        status: 'activo',
+        lat: -0.359,
+        lon: -78.506,
         altitude: 4784,
         province: 'Quito',
         lastUpdate: new Date().toISOString()
       },
-      { 
-        id: 'antisana', 
-        name: 'Antisana', 
-        status: 'observacion', 
-        lat: -0.481, 
-        lon: -78.175, 
+      {
+        id: 'antisana',
+        name: 'Antisana',
+        status: 'observacion',
+        lat: -0.481,
+        lon: -78.175,
         altitude: 5753,
         province: 'Napo',
         lastUpdate: new Date().toISOString()
