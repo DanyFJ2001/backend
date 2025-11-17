@@ -241,16 +241,13 @@ app.post('/api/audio-weather', upload.single('audio'), async (req, res) => {
     }
 
     // Nos aseguramos de que la ruta del archivo sea ABSOLUTA
-    const savedPath = req.file.path; // puede venir como 'uploads/audio-...m4a'
-    const absolutePath = path.isAbsolute(savedPath)
-      ? savedPath
-      : path.join(__dirname, savedPath);
+    const absolutePath = path.join(uploadsDir, req.file.filename);
+    
 
-    audioFilePath = absolutePath;
+    audioFilePath = absolutePath;
 
-    console.log('📁 Audio guardado en (req.file.path):', savedPath);
-    console.log('📁 Ruta absoluta que usaremos:', absolutePath);
-    console.log('📏 Tamaño del audio:', req.file.size, 'bytes');
+    console.log('📁 Audio guardado en (req.file.path):', req.file.path);
+    console.log('📁 Ruta absoluta que usaremos:', absolutePath);
 
     // 1. Transcribir el audio usando Whisper de OpenAI
     console.log('📝 Transcribiendo audio...');
