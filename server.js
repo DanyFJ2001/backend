@@ -10,8 +10,9 @@ const { schedulePredictions, scheduleVolcanoChecks, scheduleAlertCleanup, getRec
 // --- CREA LA CARPETA UPLOADS SI NO EXISTE ---
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
+  fs.mkdirSync(uploadsDir, { recursive: true });
 }
+console.log('[INFO] uploadsDir:', uploadsDir);
 // --------------------------------------------
 
 const app = express();
@@ -24,7 +25,7 @@ const PORT = process.env.PORT || 4000;
 const upload = multer({ 
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, 'uploads/');
+      cb(null, uploadsDir);
     },
     filename: (req, file, cb) => {
       const uniqueName = `audio-${Date.now()}.m4a`;
