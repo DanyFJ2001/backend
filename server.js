@@ -7,6 +7,12 @@ const fs = require('fs');
 const path = require('path');
 const FormData = require('form-data');
 const { schedulePredictions, scheduleVolcanoChecks, scheduleAlertCleanup, getRecentAlerts } = require('./scheduler');
+// --- CREA LA CARPETA UPLOADS SI NO EXISTE ---
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+// --------------------------------------------
 
 const app = express();
 app.use(cors());
@@ -564,24 +570,3 @@ app.listen(PORT, () => {
   console.log(`  - GET  /api/volcanoes`);
   console.log(`  - GET  /api/alerts`);
 });
-
-require('dotenv').config();
-const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
-const FormData = require('form-data');
-const { schedulePredictions, scheduleVolcanoChecks, scheduleAlertCleanup, getRecentAlerts } = require('./scheduler');
-
-// --- CREA LA CARPETA UPLOADS SI NO EXISTE ---
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-// --------------------------------------------
-
-const app = express();
-app.use(cors());
-app.use(express.json());
